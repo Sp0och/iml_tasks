@@ -6,18 +6,22 @@ from torch.utils.data import DataLoader
 from create_dataset import CustomDataset
 from NN import NeuralNetwork
 
-train_dataset = CustomDataset(annotations_file="train.csv")
+full_dataset = CustomDataset(annotations_file="train.csv")
+train_size = int(0.8 * len(full_dataset))
+test_size = len(full_dataset) - train_size
+train_dataset, valid_dataset = torch.utils.data.random_split(full_dataset, [train_size, test_size])
 # test_dataset = CustomDataset(annotations_file="test.csv")
 
 train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-# test_dataloader = DataLoader(dataset, batch_size=64, shuffle=True)
+valid_dataloader = DataLoader(valid_dataset, batch_size=64, shuffle=True)
+# test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=True)
 
 # Display image and label.
-# train_features, train_labels = next(iter(dataloader))
-# print(f"Feature batch shape: {train_features.size()}")
-# print(f"Labels batch shape: {train_labels.size()}")
-# print(f"Data: {train_features[0]}")
-# print(f"Label: {train_labels[0]}")
+train_features, train_labels = next(iter(train_dataloader))
+print(f"Feature batch shape: {train_features.size()}")
+print(f"Labels batch shape: {train_labels.size()}")
+print(f"Data: {train_features[0]}")
+print(f"Label: {train_labels[0]}")
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {device} device")
@@ -25,20 +29,21 @@ print(f"Using {device} device")
 model = NeuralNetwork().to(device)
 model.double()
 
-# for name, param in model.named_parameters():
-#     print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")
+for name, param in model.named_parameters():
+    print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")
 
-# logits = model(train_features)
-# pred_probab = nn.Softmax(dim=1)(logits)
-# y_pred = pred_probab.argmax(1)
-# print(f"Predicted class: {y_pred}")
+logits = model(train_features)
+pred_probab = nn.Softmax(dim=1)(logits)
+y_pred = pred_probab.argmax(1)
+print(f"Predicted class: {y_pred}")
 
 learning_rate = 1e-3
 batch_size = 64
 epochs = 10
 
 #TODO continue tutorial here https://pytorch.org/tutorials/beginner/basics/optimization_tutorial.html
-loss_fn = nn.CrossEntropyLoss() #TODO replace this with the RMS loss
+# loss_fn = nn.CrossEntropyLoss() #TODO replace this with the RMS loss
+loss_fn = nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
 def train_loop(dataloader, model, loss_fn, optimizer):
@@ -76,5 +81,5 @@ def test_loop(dataloader, model, loss_fn):
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
     train_loop(train_dataloader, model, loss_fn, optimizer)
-    test_loop(train_dataloader, model, loss_fn)
+    test_loop(valid_dataloader, model, loss_fn)
 print("Done!")
