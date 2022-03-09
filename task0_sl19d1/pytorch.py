@@ -26,32 +26,35 @@ print(f"Label: {train_labels[0]}")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {device} device")
 
-model = NeuralNetwork().to(device)
-model.double()
+try:
+    model = torch.load("linear1")
+    model.eval
+except:
+    print("Creating new model")
+    model = NeuralNetwork().to(device)
+    model.double()
 
 for name, param in model.named_parameters():
     print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")
 
-logits = model(train_features)
-pred_probab = nn.Softmax(dim=1)(logits)
-y_pred = pred_probab.argmax(1)
-print(f"Predicted class: {y_pred}")
+# logits = model(train_features)
+# print(f"Predicted class: {logits}")
 
-learning_rate = 1e-3
+learning_rate = 1e-4
 batch_size = 64
-epochs = 10
+epochs = 50
 
 #TODO continue tutorial here https://pytorch.org/tutorials/beginner/basics/optimization_tutorial.html
 # loss_fn = nn.CrossEntropyLoss() #TODO replace this with the RMS loss
 loss_fn = nn.MSELoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
 
 def train_loop(dataloader, model, loss_fn, optimizer):
     size = len(dataloader.dataset)
     for batch, (X, y) in enumerate(dataloader):
         # Compute prediction and loss
         pred = model(X)
-        loss = loss_fn(pred, y)
+        loss = loss_fn(pred[...,0], y)
 
         # Backpropagation
         optimizer.zero_grad()
@@ -71,7 +74,7 @@ def test_loop(dataloader, model, loss_fn):
     with torch.no_grad():
         for X, y in dataloader:
             pred = model(X)
-            test_loss += loss_fn(pred, y).item()
+            test_loss += loss_fn(pred[...,0], y).item()
             correct += (pred.argmax(1) == y).type(torch.double).sum().item()
 
     test_loss /= num_batches
@@ -82,4 +85,10 @@ for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
     train_loop(train_dataloader, model, loss_fn, optimizer)
     test_loop(valid_dataloader, model, loss_fn)
+
+for name, param in model.named_parameters():
+    print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")
+
+torch.save(model, "linear1")
 print("Done!")
+
