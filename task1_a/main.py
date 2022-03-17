@@ -2,6 +2,17 @@ from predictor import predict
 from trainer import train
 import torch
 
+# split train dataset into 10 equal parts
+
+# repeat leaving out 1 different fold each time:
+    # find weights with 9 parts of train data
+
+    # find RMSE of remaining part
+
+# average over all the RMSE's
+
+# repeat for different lambda
+
 train_file = "train.csv"
 validation_file = "test.csv"
 model_name = "linear2" #linear2 was used for submission and is the one with the seed currently hardcoded
