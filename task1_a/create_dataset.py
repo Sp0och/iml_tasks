@@ -4,7 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 
 class CustomTrainDataset(Dataset):
     def __init__(self, annotations_file):
-        self.data = pd.read_csv(annotations_file)
+        self.data = pd.read_csv(annotations_file).numpy()
         self.labels = self.data['y']
 
     def __len__(self):
