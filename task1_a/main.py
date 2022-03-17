@@ -10,9 +10,6 @@ data = pd.read_csv(test_file).to_numpy()
 # print(data)
 folds = np.split(data,[15,30,45,60,75,90,105,120,135], axis=0)
 
-print(len(folds))
-print(folds[0])
-
 # repeat for different lambda
 alphas = [0.1, 1, 10, 100, 200]
 average_RMSEs = []
@@ -23,14 +20,14 @@ for alpha_ in alphas:
         # find weights with 9 parts of train data
         used_folds = np.delete(folds, i, axis=0)
         y = np.concatenate(used_folds[:, :, 0], axis=0)
-        x = np.concatenate(used_folds[:, :, 1:-1], axis = 0)
+        x = np.concatenate(used_folds[:, :, 1:], axis = 0)
         estimator = Ridge(alpha=alpha_)
         estimate = estimator.fit(x, y)
     
         # find RMSE of remaining part
         validation_fold = folds[i]
         n = len(validation_fold)
-        x = validation_fold[:, 1:-1]
+        x = validation_fold[:, 1:]
         y = validation_fold[:, 0]
         y_hat = estimator.predict(x)
         rmse = np.sqrt(1/n * np.sum( np.square(y - y_hat)))
