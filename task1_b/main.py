@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from numpy.linalg import lstsq
 
-# split train dataset into 10 equal parts
 test_file = "./train.csv"
 
 data = pd.read_csv(test_file, float_precision="round_trip")
@@ -17,7 +16,7 @@ cos = np.cos(x)
 
 # least squares fit
 A = np.concatenate([x, x2, exponential, cos, np.ones_like(y)], axis=1)
-sol = np.linalg.lstsq(A, y, rcond=None)[0]
+sol = lstsq(A, y, rcond=None)[0]
 
 print(sol)
 np.savetxt("results.csv", sol, delimiter="\n", fmt='%4.12f')
