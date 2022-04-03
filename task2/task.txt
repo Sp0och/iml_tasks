@@ -1,0 +1,19 @@
+SubTask1:
+Binary Classification with incomplete data
+GT labels: LABEL_BaseExcess, LABEL_Fibrinogen, LABEL_AST, LABEL_Alkalinephos, LABEL_Bilirubin_total, LABEL_Lactate, LABEL_TroponinI, LABEL_SaO2, LABEL_Bilirubin_direct, LABEL_EtCO2.
+SubTask2:
+Binary Classification with incomplete data
+GT Labels:LABEL_Sepsis
+SubTask3:
+Regression task with incomplete data
+GT Labels: LABEL_RRate, LABEL_ABPm, LABEL_SpO2, LABEL_Heartrate
+
+Subtasks to actually split task in:
+Data manipulation (what to do with incomplete data)
+idea: fill unknown value with average of all measurements
+idea2: fill unkown values with average of healthy patients measurement (assumption that this isn't the reason for the sickness)
+
+
+
+Classification model
+Regression Model
