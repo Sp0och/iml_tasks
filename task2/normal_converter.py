@@ -95,4 +95,4 @@ for col_data, col_name in zip(exp_data, exp_features.columns):
 norm_df = pd.DataFrame(norm_data.transpose(), columns=norm_col_names)
 exp_df = pd.DataFrame(exp_data.transpose(), columns=exp_col_names)
 out_df = pd.concat([df['pid'], norm_df, exp_df], axis=1)
-out_df.to_csv('out.csv', index=False)  
+out_df.to_csv('normalized_train_features.csv', index=False)  
