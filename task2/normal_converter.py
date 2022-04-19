@@ -6,8 +6,36 @@ import matplotlib.pyplot as plt
 # compress all patient datapoints along time axis, taking the newest time if
 # multiple datapoints are available for that pid
 df = pd.read_csv("./train_features.csv")
+
+
+#TODO create new dataframe with the trends to later append, each for a trait for one patient
+#FIXME values are not given consistently over the 12 timesteps 
+#split dataset into patients
+# split_list = np.array_split(df,df.shape[0]/10)
+# #create empty dataframe of size 22794 by 35 (id and time excluded)
+# trends = pd.DataFrame(index=range(int(df.shape[0]/10)),columns=range(34))
+# #fill trends dataframe with the trends
+# for patient, id  in zip(split_list,range(5)):
+#   data = patient.to_numpy()[:,3:].transpose()
+#   for col_data, col_num in zip(data,trends.columns):
+#     if np.isnan(col_data[0]):
+#       # print(f"nan col number: {col_num}")
+#       trends.at[id,col_num] = 0
+#       #linear representation of time trend 
+#     else:
+#       den = 1
+#       if(max(col_data)) != 0:
+#         den = max(col_data)
+#       trend = (col_data[-1]-col_data[0])/den
+#       # print(f"normal col num: {col_num}")
+#       trends.at[id,col_num] = trend
+# trends.to_csv('trends.csv',index=False)
+
+
 # group by pid and take row with newest time TODO take latest datapoint
 df = df.groupby(['pid'], as_index=False).mean()
+
+
 
 norm_col_names = ['SaO2', 'Fibrinogen', 'EtCO2', 'Temp', 'Hgb', 'HCO3', 
     'BaseExcess', 'RRate', 'Phosphate', 'PaCO2', 'Platelets', 'Glucose', 'ABPm',
