@@ -15,7 +15,7 @@ df = pd.read_csv("./train_features.csv")
 # #create empty dataframe of size 22794 by 35 (id and time excluded)
 # trends = pd.DataFrame(index=range(int(df.shape[0]/10)),columns=range(34))
 # #fill trends dataframe with the trends
-# for patient, id  in zip(split_list,range(5)):
+# for patient, id  in zip(split_list,range(len(split_list))):
 #   data = patient.to_numpy()[:,3:].transpose()
 #   for col_data, col_num in zip(data,trends.columns):
 #     if np.isnan(col_data[0]):
