@@ -8,7 +8,7 @@ from sklearn.model_selection import GridSearchCV
 
 
 feature_df = pd.read_csv("normalized_train_features.csv", )
-label_df = pd.read_csv("train_labels.csv")
+label_df = pd.read_csv("input_data/train_labels.csv")
 feature_df.sort_values(by='pid')
 label_df.sort_values(by=['pid'])
 feature_df.set_index('pid')
@@ -46,12 +46,14 @@ with alive_bar(len(test_label_names)) as bar:
     print(f"shape of valid Y = {label_valid_folds.shape}")
     # clf = svm.SVC(kernel='linear')
     # TODO figure out which one is nice 
-    clf = svm.LinearSVC(dual=False, fit_intercept=False, verbose=0, class_weight='balanced')
-    param_grid = {'C': [0.0001, 0.001, 0.01, 0.1, 1.]}
-    grds = GridSearchCV(clf, param_grid, n_jobs=4, verbose=0)
-    grds.fit(x_train, y_train)
+    clf = svm.SVC(kernel='linear', C=0.1)
+    clf.fit(x_train, y_train)
+    # clf = svm.LinearSVC(dual=False, fit_intercept=False, verbose=0, class_weight='balanced')
+    # param_grid = {'C': [0.0001, 0.001, 0.01, 0.1, 1.]}
+    # grds = GridSearchCV(clf, param_grid, n_jobs=4, verbose=0)
+    # grds.fit(x_train, y_train)
 
-    predicted_labels = grds.predict(feature_valid_folds)
+    predicted_labels = clf.predict(feature_valid_folds)
     n_errors = np.sum(abs(predicted_labels-label_valid_folds))
     print(n_errors/len(label_valid_folds))
     bar()
