@@ -3,14 +3,12 @@ from sklearn import svm
 from sklearn import metrics
 import matplotlib.pyplot as plt
 import pandas as pd
-# import os
 from sklearn.model_selection import GridSearchCV
-# os.chdir("task2")
 
 features = pd.read_csv("normalized_train_features.csv").to_numpy()
 labels = pd.read_csv("train_labels.csv").to_numpy()
 
-features = features[1:1000,6]
+features = features[1:1000,6:]
 labels = labels[1:1000,11]
 
 #split data into folds keep last tenth as validation fold
@@ -31,24 +29,24 @@ print(f"shape of train Y = {y_train.shape}")
 
 x_valid = feature_folds[9]
 y_valid = label_folds[9]
-# print(f"size of valid features: {feature_valid_folds.shape}")
-# print(f"size of valid labels: {label_valid_folds.shape}")
+print(f"size of valid features: {x_valid.shape}")
+print(f"size of valid labels: {y_valid.shape}")
 # print(f"valid labels: {label_valid_folds}")
 
-clf = svm.SVC(kernel='linear')
-clf.fit(x_train,y_train)
-y_pred = clf.predict(x_valid)
-print(f"Accuracy SVC with valid being last: {metrics.accuracy_score(y_valid,y_pred)}")
+#clf = svm.LinearSVR()
+#clf.fit(x_train,y_train)
+#y_pred = clf.predict(x_valid)
+#print(f"Accuracy SVC with valid being last: {metrics.accuracy_score(y_valid,y_pred)}")
 
 
-# clf = svm.LinearSVC(dual=False, fit_intercept=False, verbose=0, class_weight='balanced')
-# param_grid = {'C': [0.0001, 0.001, 0.01, 0.1, 1.]}
-# grds = GridSearchCV(clf, param_grid, n_jobs=4, verbose=0)
-# grds.fit(x_train, y_train)
-# y_pred = grds.predict(x_valid)
-# print(f"linear SVC Accuracy with valid being last: {metrics.accuracy_score(y_valid,y_pred)}")
-# n_errors = np.sum(abs(y_pred-y_valid))
-# print(f"manual error rate with valid being last: {n_errors/len(y_valid)}")
+clf = svm.LinearSVC(dual=False, fit_intercept=False, verbose=0, class_weight='balanced')
+param_grid = {'C': [0.0001, 0.001, 0.01, 0.1, 1.]}
+grds = GridSearchCV(clf, param_grid, n_jobs=4, verbose=0)
+grds.fit(x_train, y_train)
+y_pred = grds.predict(x_valid)
+print(f"linear SVC Accuracy with valid being last: {metrics.accuracy_score(y_valid,y_pred)}")
+n_errors = np.sum(abs(y_pred-y_valid))
+print(f"manual error rate with valid being last: {n_errors/len(y_valid)}")
 
 
 
