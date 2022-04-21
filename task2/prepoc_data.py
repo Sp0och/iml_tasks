@@ -44,15 +44,15 @@ class DataProcessor:
     print("[Starting] Appling feature transformations to test data")
     scaled_test_features = self.apply_scaler(import_from_file("test_features"))
     print("[Finished] Appling feature transformations to test data")
-    # test on partial dataset
-    processed_train_df = self.prepoc_df(scaled_train_features.iloc[0:1000, :])
     print("[Starting] Preprocessing normalized train features")
-    # processed_train_df = self.prepoc_df(scaled_train_features)
-    processed_train_df.to_csv("./output_data/train_features_processed.csv", index=False)
+    # test on partial dataset
+    # processed_train_df = self.prepoc_df(scaled_train_features.iloc[0:1000, :])
+    processed_train_df = self.prepoc_df(scaled_train_features)
+    processed_train_df.to_csv("./output_data/train_features_processed.csv", index=True)
     print("[Finished] Preprocessing normalized train features")
     print("[Starting] Preprocessing normalized test features")
     processed_test_df = self.prepoc_df(scaled_test_features)
-    processed_test_df.to_csv("./output_data/test_features_processed.csv", index=False)
+    processed_test_df.to_csv("./output_data/test_features_processed.csv", index=True)
     print("[Finished] Preprocessing normalized test features")
 
   # returns a dict of trained scalers
@@ -153,29 +153,34 @@ class DataProcessor:
       loc = out_df.columns.get_loc(col_name)
       out_df.insert(loc + 1, col_name + "_trend", 0, allow_duplicates = False)
       out_df.insert(loc + 2, col_name + "_n_datapoints", 0, allow_duplicates = False)
+    # convert pid to index for faster write
+    out_df.set_index('pid', inplace=True)
     with alive_bar(len(pids) * len(data.columns[1:])) as bar:
       for pid in pids:
         # for each test in data
         for test in data.columns[1:]:
           # get 12 datapoints for this test as a row
-          test_data = data[data["pid"] == pid][test].values
+          test_data = data[data["pid"] == pid][test].to_numpy()
+          # array of bool where is not nan
+          is_not_nan_aray = ~np.isnan(test_data)
           # indices of not nan's
-          not_nan_indices = np.argwhere(~np.isnan(data[data["pid"] == pid][test].values)).transpose()[0]
+          not_nan_indices = np.argwhere(is_not_nan_aray).transpose()[0]
           # number of datapoints not nan
-          n_data = np.count_nonzero(~np.isnan(test_data))
-          out_df.loc[out_df["pid"] == pid, test + "_n_datapoints"] = n_data
+          n_data = len(not_nan_indices)
+          out_df.at[pid, test + "_n_datapoints"] = n_data
+          # out_df.loc[out_df["pid"] == pid, test + "_n_datapoints"] = n_data
 
           # replace nans with 0
           if n_data == 0 :
-             out_df.loc[out_df["pid"] == pid, test] = 0
-          
+            out_df.at[pid, test] = 0
+            # out_df.loc[out_df["pid"] == pid, test] = 0
           trend = 0
           if (n_data > 1):
             # calculate trend - fit line to data
-            trend = np.polyfit(not_nan_indices, test_data[~np.isnan(test_data)], 1)[0]
-            # due to prior normalization, trend is also normalized
+            trend = np.polyfit(not_nan_indices, test_data[is_not_nan_aray], 1)[0]
+            # out_df.at[pid, test + "_trend"] = trend
           # add trend to dataframe
-          out_df.loc[out_df["pid"] == pid, test + "_trend"] = trend
+          out_df.loc[pid, test + "_trend"] = trend
           bar()
     return out_df
           
