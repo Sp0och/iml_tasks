@@ -1,54 +1,51 @@
+from sys import call_tracing
 import numpy as np
 from sklearn import svm
 from sklearn import metrics
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
+from itertools import zip_longest
+from torch import row_stack
 
-features = pd.read_csv("normalized_train_features.csv").to_numpy()
-labels = pd.read_csv("train_labels.csv").to_numpy()
+features = pd.read_csv("input_data/train_features.csv")
+labels = pd.read_csv("input_data/train_labels.csv")
 
-features = features[1:1000,6:]
-labels = labels[1:1000,11]
+## TODO split data in chunks of 12
+'''
+pids = features["pid"].unique()
+for pid in pids:
+    # for each test in data
+    for test in features.columns[1:]:
+        # get 12 datapoints for this test as a row
+        test_data = features[features["pid"] == pid][test].to_numpy()
 
-#split data into folds keep last tenth as validation fold
-fold_size = int(len(labels)/10)
-print(f"fold size: {fold_size}, label size: {len(labels)}")
-split_idx = np.linspace(fold_size, 9*fold_size, 9).astype(int)
-#10 folds of equal size
-feature_folds = np.split(features,split_idx,axis=0)
-label_folds = np.split(labels,split_idx,axis=0)
+print(test_data)
+'''
 
-feature_train_folds = feature_folds[0:9]
-label_train_folds = label_folds[0:9]
-x_train = np.concatenate(feature_train_folds,axis=0)
-y_train = np.concatenate(label_train_folds,axis=0)
-print(f"shape of train X = {x_train.shape}")
-print(f"shape of train Y = {y_train.shape}")
+## TODO Take one Test of one patient and transpose. concatenate with all other  to the matrix pid x1 x2 ...x12
 
+## TODO calculate mean of one patient in one row
 
-x_valid = feature_folds[9]
-y_valid = label_folds[9]
-print(f"size of valid features: {x_valid.shape}")
-print(f"size of valid labels: {y_valid.shape}")
-# print(f"valid labels: {label_valid_folds}")
+## TODO Replace all nan wit the mean of one row
+#for row in rows
+#    if np.isnan(row):
+#        row = np.mean(row)
 
-#clf = svm.LinearSVR()
-#clf.fit(x_train,y_train)
-#y_pred = clf.predict(x_valid)
-#print(f"Accuracy SVC with valid being last: {metrics.accuracy_score(y_valid,y_pred)}")
+## TODO call svm.SVR for the fit
 
+# pid x1 x2 x3..x12 
+# y_LABEL
 
-clf = svm.LinearSVC(dual=False, fit_intercept=False, verbose=0, class_weight='balanced')
-param_grid = {'C': [0.0001, 0.001, 0.01, 0.1, 1.]}
-grds = GridSearchCV(clf, param_grid, n_jobs=4, verbose=0)
-grds.fit(x_train, y_train)
-y_pred = grds.predict(x_valid)
-print(f"linear SVC Accuracy with valid being last: {metrics.accuracy_score(y_valid,y_pred)}")
-n_errors = np.sum(abs(y_pred-y_valid))
-print(f"manual error rate with valid being last: {n_errors/len(y_valid)}")
-
-
-
-
-
+'''
+vital_signs_ls = ['LABEL_RRate', 'LABEL_ABPm' , 'LABEL_SpO2', 'LABEL_Heartrate']
+regressors_vital_signs = []
+X = train_features_preprocessed
+parameters = [5,10,5,20]
+for idx,label in enumerate(vital_signs_ls):
+  y = train_labels[label]
+  c = parameters[idx]
+  regressor = svm.SVR(C = c)
+  fitted_regressor = regressor.fit(X,y)
+  regressors_vital_signs.append(fitted_regressor)
+'''
