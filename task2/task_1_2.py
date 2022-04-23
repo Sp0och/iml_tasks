@@ -28,13 +28,23 @@ def predict_on_test_data(clf_dict, feature_df):
   return prob_df
 
 def train_model(feature_df, label_df):
-  feature_df.set_index('pid')
+  feature_df.sort_values(by=["pid"], inplace=True)
+  label_df.sort_values(by=["pid"], inplace=True)
   clf_dict = {}
   # train svm without temporal information
   with alive_bar(len(TEST_LABELS)) as bar:
     for test in TEST_LABELS:
-      labels = label_df[test].to_numpy()
-      features = feature_df.to_numpy()
+      # random sample equal number of data with label = 1 and label = 0
+      # since there is less with label = 1, take all of them
+      indexes = label_df.index
+      label_1_indexes = indexes[label_df[test] == 1]
+      label_0_indexes = indexes[label_df[test] == 0]
+      label_0_indexes = np.random.choice(label_0_indexes, size=len(label_1_indexes), replace=False)
+      # concatenated indices for training
+      train_indices = np.concatenate((label_1_indexes, label_0_indexes))
+      np.random.shuffle(train_indices)
+      labels = label_df[test].iloc[train_indices.tolist()].to_numpy()
+      features = feature_df.iloc[train_indices.tolist()].to_numpy()
       # UNCOMMENT FOR TESTING WITH LESS FEATURES:
       # labels = label_df[test].to_numpy()[0:100]
       # features = feature_df.to_numpy()[0:100,:]
@@ -65,7 +75,7 @@ def train_model(feature_df, label_df):
       # clf = svm.SVC(kernel='linear', C=0.1)
       # clf.fit(x_train, y_train)
       
-      svm_ = svm.LinearSVC(dual=False, fit_intercept=False, verbose=0, class_weight='balanced')
+      svm_ = svm.LinearSVC(dual=False, fit_intercept=False, verbose=0, class_weight='balanced', max_iter=10000)
       if test == 'LABEL_SEPSIS':
         svm_.set_params(loss='squared_epsilon_insensitive')
       # param_grid = {'C': [0.0001, 0.001, 0.01, 0.1, 1.]}
