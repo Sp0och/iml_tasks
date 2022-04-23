@@ -1,12 +1,7 @@
-from sys import call_tracing
 import numpy as np
 from sklearn import svm
-from sklearn import metrics
-import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from itertools import zip_longest
-from torch import row_stack
 
 features = pd.read_csv("input_data/train_features.csv")
 labels = pd.read_csv("input_data/train_labels.csv")
@@ -66,24 +61,3 @@ for test, label in zip(vital_signs, vital_signs_LABELS):
   y_predict = regressor.predict(x_valid)
   error = np.sqrt(np.mean((y_predict-y_valid)**2))
   print(error)
-
-    
-    
-
-## TODO call svm.SVR for the fit
-
-# pid x1 x2 x3..x12 
-# y_LABEL
-
-'''
-vital_signs_ls = ['LABEL_RRate', 'LABEL_ABPm' , 'LABEL_SpO2', 'LABEL_Heartrate']
-regressors_vital_signs = []
-X = train_features_preprocessed
-parameters = [5,10,5,20]
-for idx,label in enumerate(vital_signs_ls):
-  y = train_labels[label]
-  c = parameters[idx]
-  regressor = svm.SVR(C = c)
-  fitted_regressor = regressor.fit(X,y)
-  regressors_vital_signs.append(fitted_regressor)
-'''
