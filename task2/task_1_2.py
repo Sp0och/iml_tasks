@@ -19,9 +19,11 @@ def predict_on_test_data(clf_dict, feature_df):
   predicted_probabilities = features[:, 0]
   # remove pid from features
   features = features[:, 1:]
-  for test in TEST_LABELS:  
+  for test in TEST_LABELS:
+    #get the classifier for this label
     clf = clf_dict[test]
     pred =  clf.predict_proba(features)[:, 1]
+    #stack the predicted probabilities behind the patient id
     predicted_probabilities = np.column_stack((predicted_probabilities, pred))
   # convert back to df
   prob_df = pd.DataFrame(predicted_probabilities, columns=['pid'] + TEST_LABELS)
@@ -78,13 +80,13 @@ def train_model(feature_df, label_df):
       svm_ = svm.LinearSVC(dual=False, fit_intercept=False, verbose=0, class_weight='balanced', max_iter=10000)
       if test == 'LABEL_SEPSIS':
         svm_.set_params(loss='squared_epsilon_insensitive')
-      # param_grid = {'C': [0.0001, 0.001, 0.01, 0.1, 1.]}
-      # grd = GridSearchCV(svm_, param_grid, n_jobs=4, verbose=0)
-      # grd.fit(x_train, y_train)
-      # print("Best Parameters: ")
-      # print(grd.best_params_)
-      # clf = CalibratedClassifierCV(grd.best_estimator_)
-      clf = CalibratedClassifierCV(svm_)
+      param_grid = {'C': [0.0001, 0.001, 0.01, 0.1, 1., 3, 10]}
+      grd = GridSearchCV(svm_, param_grid, n_jobs=4, verbose=0)
+      grd.fit(x_train, y_train)
+      print("Best Parameters: ")
+      print(grd.best_params_)
+      clf = CalibratedClassifierCV(grd.best_estimator_)
+      # clf = CalibratedClassifierCV(svm_)
       clf.fit(x_train, y_train)
       clf_dict[test] = clf
       predicted_probabilities = clf.predict_proba(feature_valid_folds)

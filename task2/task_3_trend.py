@@ -8,16 +8,16 @@ from sklearn.model_selection import GridSearchCV
 
 
 TEST_LABELS = ['LABEL_RRate', 'LABEL_ABPm' , 'LABEL_SpO2', 'LABEL_Heartrate']
-vital_signs = ['RRate', 'ABPm' , 'SpO2', 'Heartrate']
 
 # reg_dict ist der predictor
 def predict_on_test_data(reg_dict, feature_df):
     # gehe durch df (DataFrame) und wandle dieses in matrix um
-    predicitions = feature_df["pid"].unique()
-    for vitals in vital_signs:
-        features = feature_df[vitals].to_numpy()
-        features = features.reshape((-1,12))
-        reg = reg_dict[vitals]
+    predicitions = feature_df["pid"]
+    #exclude pid
+    features = feature_df.to_numpy()[:,1:]
+    for label in TEST_LABELS:
+        #four different regs for the four labels
+        reg = reg_dict[label]
         pred = reg.predict(features)
         predicitions = np.column_stack((predicitions, pred))
     pred_df = pd.DataFrame(predicitions, columns=['pid'] + TEST_LABELS)
@@ -40,12 +40,11 @@ def predict_on_test_data(reg_dict, feature_df):
 def train_model(feature_df, label_df):
     reg_dict = {}
     # parameters = [5,10,5,20]
-    for idx,vitals in enumerate(vital_signs):
+    features = feature_df.to_numpy()[:,1:]
+    for idx,label in enumerate(TEST_LABELS):
         #consider columns of current vital
-        features = feature_df[vitals].to_numpy()
         #get all timesteps on one line
-        features = features.reshape((-1,12))
-        labels = label_df[TEST_LABELS[idx]].to_numpy()
+        labels = label_df[label].to_numpy()
         # train svm without temporal information
         x_train,x_valid,y_train,y_valid = train_test_split(features,labels, train_size=0.9)
         # c = parameters[idx]
@@ -57,12 +56,12 @@ def train_model(feature_df, label_df):
         print("Best Parameters: ")
         print(grd.best_params_)
         # reg.fit(x_train,y_train)
-        reg_dict[vitals] = grd
+        reg_dict[label] = grd
         # y wollen wir damit nun predicten, mit y_valid checken wir das nachher
         # y_predict = reg.predict(x_valid)
         y_predict = grd.predict(x_valid)
         error = np.sqrt(np.mean((y_predict-y_valid)**2))
-        print('Error for ' + vitals + ": "  + str(error))
+        print('Error for ' + label + ": "  + str(error))
     return reg_dict
 '''
 regressors_vital_signs = []
