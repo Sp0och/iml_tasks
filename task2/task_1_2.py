@@ -64,8 +64,10 @@ def train_model(feature_df, label_df):
       # TODO figure out which one is nice 
       # clf = svm.SVC(kernel='linear', C=0.1)
       # clf.fit(x_train, y_train)
-
+      
       svm_ = svm.LinearSVC(dual=False, fit_intercept=False, verbose=0, class_weight='balanced')
+      if test == 'LABEL_SEPSIS':
+        svm_.set_params(loss='squared_epsilon_insensitive')
       # param_grid = {'C': [0.0001, 0.001, 0.01, 0.1, 1.]}
       # grd = GridSearchCV(svm_, param_grid, n_jobs=4, verbose=0)
       # grd.fit(x_train, y_train)

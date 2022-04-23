@@ -12,11 +12,14 @@ vital_signs = ['RRate', 'ABPm' , 'SpO2', 'Heartrate']
 # reg_dict ist der predictor
 def predict_on_test_data(reg_dict, feature_df):
     # gehe durch df (DataFrame) und wandle dieses in matrix um
+    predicitions = feature_df["pid"].unique()
     for vitals in vital_signs:
         features = feature_df[vitals].to_numpy()
-        features = features.reshape((...,12))
+        features = features.reshape((-1,12))
         reg = reg_dict[vitals]
-        pred_df = reg.predict(features)
+        pred = reg.predict(features)
+        predicitions = np.column_stack((predicitions, pred))
+    pred_df = pd.DataFrame(predicitions, columns=['pid'] + TEST_LABELS)
     return pred_df
   
 '''      
@@ -38,19 +41,19 @@ def train_model(feature_df, label_df):
     parameters = [5,10,5,20]
     for idx,vitals in enumerate(vital_signs):
         features = feature_df[vitals].to_numpy()
-        features = features.reshape((...,12))
-        labels = label_df[vitals].to_numpy()
+        features = features.reshape((-1,12))
+        labels = label_df[TEST_LABELS[idx]].to_numpy()
         # train svm without temporal information
         x_train,x_valid,y_train,y_valid = train_test_split(features,labels, train_size=0.9)
         c = parameters[idx]
-        reg = svm.LinearSVR(C=c,max_iter=10000, loss='squared_epsilon_insensitive')
+        reg = svm.LinearSVR(C=c,max_iter=10000, loss='squared_epsilon_insensitive', dual=False)
         reg.fit(x_train,y_train)
         reg_dict[vitals] = reg
         # y wollen wir damit nun predicten, mit y_valid checken wir das nachher
         y_predict = reg.predict(x_valid)
         error = np.sqrt(np.mean((y_predict-y_valid)**2))
         print('Error for ' + vitals + ": "  + str(error))
-    return 
+    return reg_dict
 '''
 regressors_vital_signs = []
 X = train_features_preprocessed

@@ -201,6 +201,7 @@ class DataProcessor:
           bar()
         out_array = np.append(out_array, pid_array, axis=0)
     out_df = pd.DataFrame(out_array, columns=['pid'] + VITAL_SIGNS)
+    out_df.sort_values(by=["pid"], inplace=True)
     return out_df
 
 
