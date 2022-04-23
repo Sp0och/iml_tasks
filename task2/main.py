@@ -1,6 +1,7 @@
 import preprocess_data
 import os.path
 import task_1_2
+import task_3
 import pandas as pd
 
 if __name__ == "__main__":
@@ -15,17 +16,21 @@ if __name__ == "__main__":
   print("[Starting] Training model")
   feature_df = pd.read_csv("output_data/train_features_processed.csv")
   label_df = pd.read_csv("input_data/train_labels.csv")
-  clf = task_1_2.train_model(feature_df, label_df)
+  clf_dict = task_1_2.train_model(feature_df, label_df)
+  feature_df = pd.read_csv("output_data/train_reg_features.csv")
+  reg_dict = task_3.train_model(feature_df, label_df)
   print("[Finished] Training model")
 
   # predict on test data
   print("[Starting] Predicting on test data")
   feature_df = pd.read_csv("output_data/test_features_processed.csv")
-  predicted_data = task_1_2.predict_on_test_data(clf, feature_df)
+  predicted_data_1_2 = task_1_2.predict_on_test_data(clf, feature_df)
+  feature_df = pd.read_csv("output_data/test_reg_features.csv")
+  predicted_data_3 = task_3.predict_on_test_data(clf, feature_df)
   print("[Finished] Predicting on test data")
   # write to sample csv
   print("[Starting] Writing to sample csv")
-  predicted_data.to_csv("output_data/submission.csv", index=False)
+  predicted_data.to_csv("output_data/submission.csv", float_format='%.6f', index=False)
   print("[Finished] Writing to sample csv")
 
 

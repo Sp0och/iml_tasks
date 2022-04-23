@@ -24,14 +24,10 @@ def predict_on_test_data(clf_dict, feature_df):
     pred =  clf.predict_proba(features)[:, 1]
     predicted_probabilities = np.column_stack((predicted_probabilities, pred))
   # convert back to df
-  column_names = TEST_LABELS
-  column_names.insert(0, "pid")
-  prob_df = pd.DataFrame(predicted_probabilities, columns=column_names)
+  prob_df = pd.DataFrame(predicted_probabilities, columns=['pid'] + TEST_LABELS)
   return prob_df
 
 def train_model(feature_df, label_df):
-  feature_df.sort_values(by='pid')
-  label_df.sort_values(by=['pid'])
   feature_df.set_index('pid')
   clf_dict = {}
   # train svm without temporal information

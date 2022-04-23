@@ -14,6 +14,8 @@ EXP_COL_NAMES = ['PTT', 'BUN', 'Lactate', 'WBC', 'Creatinine', 'AST',
     'Alkalinephos', 'SpO2', 'Bilirubin_direct', 'Bilirubin_total',
     'TroponinI']
 
+VITAL_SIGNS = ['RRate', 'ABPm' , 'SpO2', 'Heartrate']
+
 def import_from_file(filename):
   data = pd.read_csv("./input_data/" + filename + ".csv")
   return data
@@ -21,6 +23,7 @@ def import_from_file(filename):
 class DataProcessor:
   def __init__(self):
     train_features_df = import_from_file("train_features")
+    test_features_df = import_from_file("test_features")
     self.means = {}
     self.scales = {}
     print("[Starting] Finding scales and means")
@@ -30,8 +33,16 @@ class DataProcessor:
     scaled_train_features = self.apply_scaler(train_features_df)
     print("[Finished] Appling feature transformations to train data")
     print("[Starting] Appling feature transformations to test data")
-    scaled_test_features = self.apply_scaler(import_from_file("test_features"))
+    scaled_test_features = self.apply_scaler(test_features_df)
     print("[Finished] Appling feature transformations to test data")
+    print("[Starting] Processing train features for regression")
+    reg_features = self.preproc_regression(train_features_df)
+    reg_features.to_csv("output_data/train_reg_features.csv", index=False)
+    print("[Finished] Processing train features for regression")
+    print("[Starting] Processing test features for regression")
+    reg_features = self.preproc_regression(test_features_df)
+    reg_features.to_csv("output_data/test_reg_features.csv", index=False)
+    print("[Finished] Processing test features for regression")
     print("[Starting] Preprocessing normalized train features")
     # test on partial dataset
     # processed_train_df = self.prepoc_df(scaled_train_features.iloc[0:1000, :])
@@ -171,6 +182,27 @@ class DataProcessor:
           out_df.loc[pid, test + "_trend"] = trend
           bar()
     return out_df
+  
+  def preproc_regression(self, data):
+    pids = data["pid"].unique()
+    out_array = np.empty([0, 5])
+    with alive_bar(len(pids) * len(VITAL_SIGNS)) as bar:
+      for pid in pids:
+        pid_array = np.empty([12, 5])
+        pid_array[:, 0] = pid
+        for idx, test in enumerate(VITAL_SIGNS):
+          patient_data = data[data["pid"] == pid][test].to_numpy()
+          if len(patient_data[~np.isnan(patient_data)]) == 0:
+            patient_data = np.ones(12) * self.means[test]
+          else: 
+            mean = np.mean(patient_data[~np.isnan(patient_data)])
+            patient_data[np.isnan(patient_data)] = mean
+          pid_array[:, idx + 1] = patient_data # add column vector
+          bar()
+        out_array = np.append(out_array, pid_array, axis=0)
+    out_df = pd.DataFrame(out_array, columns=['pid'] + VITAL_SIGNS)
+    return out_df
+
 
 if __name__ == "__main__":
   DataProcessor()
