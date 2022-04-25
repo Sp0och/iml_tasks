@@ -36,9 +36,9 @@ if __name__ == "__main__":
   predicted_data_3 = task_3.predict_on_test_data(reg_dict, feature_df)
   print("[Finished] Predicting on test data")
   # write to sample csv
-  print("[Starting] Writing to sample csv")
+  print("[Starting] Writing to submission csv")
   predicted_data = predicted_data_1_2.merge(predicted_data_3, on='pid')
   predicted_data.to_csv("output_data/submission.csv", float_format='%.6f', index=False)
-  print("[Finished] Writing to sample csv")
+  print("[Finished] Writing to submission csv")
 
 

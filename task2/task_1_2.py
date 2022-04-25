@@ -1,12 +1,10 @@
 import numpy as np
 from sklearn import svm
-from sklearn import metrics
-from sklearn.model_selection import GridSearchCV
 from sklearn.calibration import CalibratedClassifierCV
 import matplotlib.pyplot as plt
 import pandas as pd
 from alive_progress import alive_bar
-from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 
 TEST_LABELS = ['LABEL_BaseExcess', 'LABEL_Fibrinogen', 'LABEL_AST', 
       'LABEL_Alkalinephos', 'LABEL_Bilirubin_total', 'LABEL_Lactate', 
@@ -39,6 +37,7 @@ def train_model(feature_df, label_df):
       indexes = label_df.index
       label_1_indexes = indexes[label_df[test] == 1]
       label_0_indexes = indexes[label_df[test] == 0]
+      numpy.random.seed(42)
       label_0_indexes = np.random.choice(label_0_indexes, size=len(label_1_indexes), replace=False)
       # concatenated indices for training
       train_indices = np.concatenate((label_1_indexes, label_0_indexes))
@@ -51,29 +50,7 @@ def train_model(feature_df, label_df):
 
       # remove pid from features
       features = features[:, 1:]
-
-      fold_size = int(len(labels)/10)
-      split_idx = np.linspace(fold_size, 9*fold_size, 9).astype(int)
-      #10 folds of equal size
-      feature_folds = np.split(features,split_idx,axis=0)
-      label_folds = np.split(labels,split_idx,axis=0)
-
-      feature_train_folds = feature_folds[0:9]
-      label_train_folds = label_folds[0:9]
-      x_train = np.concatenate(feature_train_folds,axis=0)
-      y_train = np.concatenate(label_train_folds,axis=0)
-
-      # print(f"shape of train X = {x_train.shape}")
-      # print(f"shape of train Y = {y_train.shape}")
-
-      feature_valid_folds = feature_folds[9]
-      label_valid_folds = label_folds[9]
-      # print(f"shape of valid X = {feature_valid_folds.shape}")
-      # print(f"shape of valid Y = {label_valid_folds.shape}")
-
-      # TODO figure out which one is nice 
-      # clf = svm.SVC(kernel='linear', C=0.1)
-      # clf.fit(x_train, y_train)
+      x_train, x_valid, y_train, y_valid = train_test_split(features,labels, train_size=0.9, random_state=42)
       
       svm_ = svm.LinearSVC(dual=False, fit_intercept=False, verbose=0, class_weight='balanced', max_iter=10000)
       if test == 'LABEL_SEPSIS':
@@ -87,12 +64,12 @@ def train_model(feature_df, label_df):
       clf = CalibratedClassifierCV(svm_)
       clf.fit(x_train, y_train)
       clf_dict[test] = clf
-      predicted_probabilities = clf.predict_proba(feature_valid_folds)
+      predicted_probabilities = clf.predict_proba(x_valid)
       # label = 1 if probability of 1 > 0.5 else 0
       predicted_labels = predicted_probabilities[:,1] > 0.5
-      n_errors = np.sum(abs(predicted_labels-label_valid_folds))
+      n_errors = np.sum(abs(predicted_labels-y_valid))
       print("Accuracy for " + str(test))
-      print(1.0 - n_errors/len(label_valid_folds))
+      print(1.0 - n_errors/len(y_valid))
       bar()
   return clf_dict
   
