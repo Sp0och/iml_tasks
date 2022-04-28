@@ -37,7 +37,7 @@ def train_model(feature_df, label_df):
       indexes = label_df.index
       label_1_indexes = indexes[label_df[test] == 1]
       label_0_indexes = indexes[label_df[test] == 0]
-      numpy.random.seed(42)
+      np.random.seed(42)
       label_0_indexes = np.random.choice(label_0_indexes, size=len(label_1_indexes), replace=False)
       # concatenated indices for training
       train_indices = np.concatenate((label_1_indexes, label_0_indexes))
