@@ -83,7 +83,7 @@ def accuracy(_, embeddings):
         tf.cast(tf.greater_equal(distance_falsy, distance_truthy), tf.float32))
 
 def make_training_labels():
-    '''Split the labels into training and validation dataset'''
+    '''Split the labels into training and validation dataset and return its length'''
     samples = 'task4_be9ai3nsdj/train_triplets.txt'
     with open(samples, 'r') as file:
         triplets = [line for line in file.readlines()]
