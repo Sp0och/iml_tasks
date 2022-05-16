@@ -1,0 +1,15 @@
+Given:
+-Pretrain Dataset with 50'000 entries (of size 1000) and respective Labels being Humo-Energy
+-Small Train Dataset with 100 entries (of size 1000) and respective labels being Humo-Lumo Gap
+-Test Feature Dataset with 10000 entries (of size 1000) without labels
+-We know that Humo-Energy and Humo-Lumo gap are relatively closely connected
+
+We want to:
+-Predict Humo_Lumo_Gap from the test feature dataset
+
+Battleplan:
+- Perform dimensionality reduction to reduce feature size
+- Build and train a neural network on the dim reduced pretrain dataset
+- Apply transfer learning to adapt pretrain NN to current task
+- Fit transferred NN with Train Dataset 
+- Predict Humo-Lumo-Gap from the Test Dataset
